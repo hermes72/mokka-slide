@@ -1,0 +1,46 @@
+#!/usr/bin/env ruby
+require "open-uri"
+require "fileutils"
+v=ARGV[0]
+puts v
+stew = open(v).read
+puts "downloadd"
+title = stew.split("<title>")[1].split("</title>")[0]
+puts title
+stew = stew.split("<div class=\"slide_container\">")[1]
+puts "Splitted slide"
+stew = stew.split('<div class="j-next-container next-container">')[0]
+puts "Splitted end"
+stew = stew.split('</section>')
+puts "Splitted Section"
+FileUtils::mkdir_p title
+
+def writeNow(i,title)
+  open(title+"/mokkarb", 'wb') do |file|
+    file << i.to_s    
+  end
+end
+
+
+#Function that downloads stuff
+def slideWriter(stew,title,continue)
+  i = continue
+  if File.exist?(title+"/mokkarb")
+    num = File.read(title+"/mokkarb")
+    i = num.to_i
+    puts i
+  end
+  while i < stew.size-1 do
+    stew[i] = stew[i].split("data-full=\"")[1]
+    stew[i] = stew[i].split("\" alt=")[0]
+    stew[i] = stew[i].split("?cb=")[0]
+    print "#"
+    open(title+"/"+title + "_" +(i+1).to_s+".jpg", 'wb') do |file|
+      file << open(stew[i]).read
+      writeNow(i+1,title)
+    end        
+    i+=1
+  end
+end
+
+slideWriter(stew,title,0)
